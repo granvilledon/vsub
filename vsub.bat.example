@@ -1,0 +1,50 @@
+@echo off
+rem ---------------------------------------------------------------
+rem  vsub launcher for Windows - PORTABLE edition
+rem
+rem  HOW TO USE
+rem    1. Copy this file to any folder that holds your videos
+rem    2. Rename it to vsub.bat
+rem    3. Edit the PY line below to your python.exe
+rem    4. Double-click it, or drag video(s) onto it
+rem
+rem  NOTE: ASCII only, on purpose. cmd reads .bat using the OEM
+rem  codepage, so stray UTF-8 bytes here can corrupt parsing and the
+rem  whole file silently does nothing. Keep this file CRLF, no BOM.
+rem ---------------------------------------------------------------
+title vsub
+setlocal
+
+rem >>> EDIT THIS: path to python.exe that has vsub installed
+set "PY=C:\Path\To\Your\python.exe"
+
+rem >>> EDIT THIS: folder that contains vsub.py (only needed if running from source)
+set "VHOME=C:\Path\To\vsub"
+
+set "PYTHONIOENCODING=utf-8"
+set "PYTHONUTF8=1"
+
+rem VHOME lets `python -m vsub` work from a source checkout (no pip install).
+rem If you installed with pip, this line is harmless.
+set "PYTHONPATH=%VHOME%;%PYTHONPATH%"
+
+if not exist "%PY%" goto nopy
+
+echo.
+echo ============================================================
+echo   vsub - subtitles + AI translation
+echo ============================================================
+"%PY%" -m vsub %*
+set RC=%ERRORLEVEL%
+echo.
+echo === done. exit code %RC% ===
+pause
+exit /b %RC%
+
+:nopy
+echo.
+echo [ERROR] python.exe not found:
+echo   %PY%
+echo Open this .bat in Notepad and fix the PY line.
+pause
+exit /b 127

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vsub"
+version = "0.1.0"
+description = "给视频自动生成字幕并翻译：本地 faster-whisper 识别 + 可插拔翻译后端（Ollama / OpenAI 兼容 / DeepL / Gemini）"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "vsub contributors" }]
+keywords = ["subtitle", "srt", "whisper", "translation", "video", "asr"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Multimedia :: Video",
+    "Environment :: Console",
+]
+dependencies = [
+    "faster-whisper>=1.0",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+cuda = ["ctranslate2>=4.0", "nvidia-cublas-cu12", "nvidia-cudnn-cu12"]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[project.scripts]
+vsub = "vsub.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/granvilledon/vsub"
+Issues = "https://github.com/granvilledon/vsub/issues"
+Repository = "https://github.com/granvilledon/vsub"
+
+[tool.setuptools]
+packages = ["vsub", "vsub.translators"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: 需要模型/网络，跳过日常 CI"]

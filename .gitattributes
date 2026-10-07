@@ -1,0 +1,12 @@
+# 统一行尾：仓库里存 LF，检出时按平台转换
+* text=auto eol=lf
+
+# Windows 批处理必须是 CRLF，否则双击运行可能异常
+*.bat text eol=crlf
+*.bat.example text eol=crlf
+
+# 二进制，别做任何转换
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.mkv binary
