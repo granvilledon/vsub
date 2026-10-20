@@ -14,6 +14,14 @@ def test_srt_time():
     assert srt_time(0) == "00:00:00,000"
     assert srt_time(3661.5) == "01:01:01,500"
     assert srt_time(-5) == "00:00:00,000"
+    assert srt_time(None) == "00:00:00,000"
+
+
+def test_srt_time_carries_instead_of_overflowing():
+    """毫秒进位必须继续往分、时走，否则会产出 00:00:60,000 这种非法时间戳。"""
+    assert srt_time(59.9996) == "00:01:00,000"
+    assert srt_time(3599.9996) == "01:00:00,000"
+    assert srt_time(59.999) == "00:00:59,999"
 
 
 def test_write_srt_translation_on_top(tmp_path):
@@ -89,3 +97,17 @@ def test_unknown_provider_exits():
     import pytest
     with pytest.raises(SystemExit):
         get_translator("nonexistent-provider")
+
+
+def test_config_warns_when_toml_parser_missing(tmp_path, monkeypatch, capsys):
+    """3.10 及以下没有 tomllib 时，配置文件不能静默失效 —— 必须告警。"""
+    from vsub import config
+
+    p = tmp_path / "config.toml"
+    p.write_text('[translate]\nprovider = "deepl"\n', encoding="utf-8")
+    monkeypatch.setattr(config, "tomllib", None)
+
+    cfg = config.load(p)
+    out = capsys.readouterr().out
+    assert cfg["translate"]["provider"] == "ollama"     # 降级到默认值
+    assert "TOML" in out                                 # 但不能一声不吭

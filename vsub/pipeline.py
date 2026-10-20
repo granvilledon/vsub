@@ -8,7 +8,7 @@ from pathlib import Path
 from . import asr
 from .media import collect_videos, embed, extract_audio
 from .srt import write_srt
-from .utils import _fmt_eta, log
+from .utils import _fmt_eta, check_tool, log
 
 STATUS_OK, STATUS_SKIP, STATUS_FAIL = "OK", "SKIP", "FAIL"
 
@@ -37,7 +37,8 @@ def process_video(video, cfg, translator, outdir, src=None,
         extract_audio(video, wav)
 
     # 2) ASR（源语言自动识别，结果记进 meta 供下次复用）
-    if cache.exists():
+    #    --force 时必须重跑转写：否则模型白加载，转写还是旧的
+    if cache.exists() and not o.get("force"):
         segs = json.loads(cache.read_text(encoding="utf-8"))
         log(f"复用已有转写缓存：{len(segs)} 条（删掉 {cache.name} 可强制重跑）")
         src_lang = src
@@ -127,6 +128,14 @@ def run(cfg, paths, src=None, glossary=None):
     from .config import resolve_api_key
     from .translators import get_translator
 
+    # 前置检查：缺 ffmpeg 时给一句人话，而不是让用户看 FileNotFoundError 的 traceback
+    missing_tools = [t for t in ("ffmpeg", "ffprobe") if not check_tool(t)]
+    if missing_tools:
+        log(f"!! 找不到 {' / '.join(missing_tools)}，请先安装 ffmpeg 并加入 PATH")
+        log("   Windows: winget install Gyan.FFmpeg     macOS: brew install ffmpeg")
+        log("   Ubuntu : sudo apt install ffmpeg")
+        return 1
+
     t = cfg["translate"]
     o = cfg["output"]
     translator = get_translator(
@@ -201,4 +210,5 @@ def run(cfg, paths, src=None, glossary=None):
             log("失败的文件：" + "、".join(failed))
     else:
         log("全部完成。")
-    return 0
+    # 有任何一个失败就以 1 退出，脚本/定时任务才能感知成败
+    return 1 if any(r == STATUS_FAIL for _, r in results) else 0

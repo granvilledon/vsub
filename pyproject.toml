@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vsub"
-version = "0.1.0"
+name = "vsub-cli"
+version = "0.1.1"
 description = "给视频自动生成字幕并翻译：本地 faster-whisper 识别 + 可插拔翻译后端（Ollama / OpenAI 兼容 / DeepL / Gemini）"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -20,6 +20,8 @@ classifiers = [
 dependencies = [
     "faster-whisper>=1.0",
     "numpy>=1.24",
+    # 3.9/3.10 没有内置 tomllib，用 tomli 顶上；3.11+ 不装这个包
+    "tomli>=2.0; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]

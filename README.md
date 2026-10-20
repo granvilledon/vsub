@@ -23,18 +23,22 @@
 ## 安装
 
 ```bash
-# 需要 ffmpeg/ffprobe 在 PATH 里
-pipx install vsub          # 推荐
-# 或
-pip install -U vsub
-```
+# 需要 ffmpeg / ffprobe 在 PATH 里
 
-从源码跑：
-
-```bash
+# 从源码安装（当前可用）
 git clone https://github.com/granvilledon/vsub.git && cd vsub
 pip install -e .
 ```
+
+PyPI 包名是 **`vsub-cli`**（命令行仍然是 `vsub`），发布后可以：
+
+```bash
+pipx install vsub-cli      # 推荐
+# 或
+pip install -U vsub-cli
+```
+
+> ⚠️ PyPI 上的 `vsub` 是一个**同名但无关**的 C 库封装（作者 Michael Makukha），不是本项目，别装错。
 
 ## 30 秒上手
 

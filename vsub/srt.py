@@ -4,16 +4,17 @@ import re
 
 
 def srt_time(t):
-    if t is None:
-        t = 0.0
-    t = max(0.0, float(t))
-    h = int(t // 3600)
-    m = int((t % 3600) // 60)
-    s = int(t % 60)
-    ms = int(round((t - int(t)) * 1000))
-    if ms == 1000:
-        s += 1
-        ms = 0
+    """秒 -> SRT 时间戳。
+
+    先整体换算成毫秒再拆时分秒，进位天然正确。
+    旧实现是「秒截断 + 毫秒四舍五入」，ms 凑到 1000 时只给秒 +1，
+    于是 59.9996 会输出 00:00:60,000（秒=60），3599.9996 会输出 00:59:60,000，
+    都是 SRT 规范不允许的值，ffmpeg 会整条解析失败。
+    """
+    ms = max(0, int(round(float(t or 0) * 1000)))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 

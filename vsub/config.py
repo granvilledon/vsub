@@ -10,7 +10,10 @@ from pathlib import Path
 try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:             # pragma: no cover
-    tomllib = None
+    try:
+        import tomli as tomllib  # 3.9 / 3.10：由 pyproject 的 tomli 依赖提供
+    except ModuleNotFoundError:
+        tomllib = None
 
 APP_DIR = Path(os.environ.get("VSUB_HOME", Path.home() / ".vsub"))
 CONFIG_NAME = "config.toml"
@@ -111,13 +114,18 @@ def load(path=None):
     """读配置文件并与默认值合并"""
     cfg = {s: dict(v) for s, v in DEFAULTS.items()}
     p = config_path(path)
-    if p.exists() and tomllib is not None:
-        try:
-            data = tomllib.loads(p.read_text(encoding="utf-8"))
-            cfg = _deep_merge(cfg, {k: v for k, v in data.items()
-                                    if isinstance(v, dict)})
-        except Exception as e:                              # noqa: BLE001
-            print(f"[warn] 配置文件解析失败（{p}）：{e}，改用默认值")
+    if p.exists():
+        if tomllib is None:
+            # 配置文件写了、却解析不了 —— 必须说出来，否则用户以为改的配置生效了
+            print(f"[warn] 找到配置文件 {p}，但当前 Python 缺少 TOML 解析器"
+                  f"（3.10 及以下需 pip install tomli），本次按默认值运行")
+        else:
+            try:
+                data = tomllib.loads(p.read_text(encoding="utf-8"))
+                cfg = _deep_merge(cfg, {k: v for k, v in data.items()
+                                        if isinstance(v, dict)})
+            except Exception as e:                              # noqa: BLE001
+                print(f"[warn] 配置文件解析失败（{p}）：{e}，改用默认值")
     # 环境变量覆盖
     for env, (sec, key) in {**ENV_MAP, **LEGACY_ENV}.items():
         val = os.environ.get(env)

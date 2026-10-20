@@ -6,6 +6,6 @@
   3. 翻译后端可插拔：Ollama(免费/本地) / OpenAI 兼容 / DeepL / Gemini
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["__version__"]

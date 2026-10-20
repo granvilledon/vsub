@@ -25,10 +25,21 @@ video -> ffmpeg audio -> faster-whisper ASR -> translator -> .srt (next to video
 
 ```bash
 # requires ffmpeg/ffprobe on PATH
-pipx install vsub
-# or
-pip install -U vsub
+
+# from source (works today)
+git clone https://github.com/granvilledon/vsub.git && cd vsub
+pip install -e .
 ```
+
+The PyPI package name is **`vsub-cli`** (the command is still `vsub`):
+
+```bash
+pipx install vsub-cli
+# or
+pip install -U vsub-cli
+```
+
+> ⚠️ The `vsub` package on PyPI is an **unrelated** Python wrapper for a C library by Michael Makukha — it is not this project.
 
 ## Quick start
 
