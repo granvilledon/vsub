@@ -2,7 +2,13 @@ name: Publish to PyPI
 
 # Release 发布后自动构建并上传到 PyPI（Trusted Publishing，无需在 GitHub 存任何密钥）。
 # 前提：在 PyPI 上为 vsub-cli 预登记本仓库为可信发布方（见 README 或仓库文档）。
+#
+# 注意：不要依赖 release 事件——Release 是由 release.yml 用 GITHUB_TOKEN 创建的，
+# GITHUB_TOKEN 触发的事件不会级联启动新工作流。所以这里同时监听 v* 标签推送，
+# 与 release.yml 并行跑；也可以在 Actions 页面手动触发。
 on:
+  push:
+    tags: ["v*"]
   release:
     types: [published]
   workflow_dispatch:

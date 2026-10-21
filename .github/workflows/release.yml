@@ -28,7 +28,11 @@ jobs:
           TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
           NOTES=".github/release-notes/${TAG}.md"
-          if [ -f "$NOTES" ]; then
+          # 幂等：Release 已存在（如重跑/重推 tag）就更新正文而不是报错
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release ${TAG} 已存在，仅更新正文"
+            gh release edit "$TAG" --title "vsub $TAG" $( [ -f "$NOTES" ] && echo --notes-file "$NOTES" )
+          elif [ -f "$NOTES" ]; then
             gh release create "$TAG" --title "vsub $TAG" --notes-file "$NOTES"
           else
             gh release create "$TAG" --title "vsub $TAG" --generate-notes
