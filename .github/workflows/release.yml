@@ -1,0 +1,35 @@
+name: Release
+
+# 推送 v* 标签时自动创建 GitHub Release；
+# 也支持在 Actions 页面手动触发（填 tag 名）。
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的 tag（如 v0.1.1）"
+        required: true
+        default: "v0.1.1"
+
+# 默认 GITHUB_TOKEN 是只读的；这里显式声明写权限，才能创建 Release
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          NOTES=".github/release-notes/${TAG}.md"
+          if [ -f "$NOTES" ]; then
+            gh release create "$TAG" --title "vsub $TAG" --notes-file "$NOTES"
+          else
+            gh release create "$TAG" --title "vsub $TAG" --generate-notes
+          fi
